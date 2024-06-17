@@ -1,104 +1,126 @@
-// MathClient.cpp : Client app for MathLibrary DLL.
- //#include "pch.h" //Uncomment for Visual Studio 2017 and earlier
 #include <windows.h>
 #include <iostream>
-//#include "caesar.h"
-using namespace std; 
+#include <stdio.h>
 
+//using namespace std; 
 
+/*
 char* Encrypt(char* messageToEncrypt, int offSet);
 char* Decrypt(char* messageToDecrypt, int offSet);
-// Pointer to sum function
-typedef double(*sum_ptr_t)(double, double);
-// Pointer to multiply function
-typedef double(*multiply_ptr_t)(double, double);
- 
-int main() {
- 
-    char message[] = "Xy13Z";
+*/
+// Function pointers
+typedef char*(*encrypt_ptr_t)(char*, int);
+typedef char* (*decrypt_ptr_t)(char*, int);
+// Const dll function naming
+const char* encryptProcName = "EncryptStr";
+const char* decryptProcName = "DecryptStr";
+// Const input size
+const int INPUTSIZE = 201;
+// Function declaration
+int HandleEncrypt(char*, encrypt_ptr_t);
+int HandleDecrypt(char*, decrypt_ptr_t);
 
-   
-    Encrypt(message, 1);
-    cout << message << endl;  // the key is no more than 26 
-    Decrypt(message, 1);
-    cout << message << endl;
 
-    /*   HINSTANCE handle = LoadLibrary(TEXT("..\\caesarDLL\\x64\\Debug\\caesarDLL.dll"));
-    if (handle == nullptr || handle == INVALID_HANDLE_VALUE) {
-        cout << "Lib not found" << endl;
+int main() 
+{
+    HINSTANCE handle = LoadLibrary(TEXT("..\\..\\Source\\caesarDLL\\x64\\Debug\\caesarDLL.dll"));
+    if (handle == nullptr || handle == INVALID_HANDLE_VALUE) 
+    {
+        printf("Lib not found\n");
         return 1;
     } 
 
-    sum_ptr_t sum_ptr = (sum_ptr_t)GetProcAddress(handle, "sum");
-    if (sum_ptr == nullptr) {
-        cout << "Function not found" << endl;
+    encrypt_ptr_t encryptProcPtr = (encrypt_ptr_t)GetProcAddress(handle, encryptProcName);
+   
+    if (encryptProcName == nullptr) 
+    {
+        printf("Function not found\n");
         FreeLibrary(handle);
         return 1;
     }
 
-    multiply_ptr_t multiply_ptr = (multiply_ptr_t)GetProcAddress(handle, "multiply");
-    if (multiply_ptr == nullptr) {
-        cout << "Function not found" << endl;
+    decrypt_ptr_t decryptProcPtr = (decrypt_ptr_t)GetProcAddress(handle, decryptProcName);
+    
+    if (decryptProcPtr == nullptr) 
+    {
+        printf("Function not found\n");
         FreeLibrary(handle);
         return 1; 
     }
 
-    cout << sum_ptr(4, 5) << endl;
-    cout << multiply_ptr(6, 3) << endl;
+    char* input = new char[INPUTSIZE];
+    bool ifContinue = true;
 
-    FreeLibrary(handle);
-    return 0;
-    */
-}
-char* Encrypt(char* messageToEncrypt, int offSet)
-{
-
-    for (int index = 0; index <= strlen(messageToEncrypt); index++)
+    while (ifContinue)
     {
-        int curChCodeWithOffSet = (int)messageToEncrypt[index] + offSet;
+        printf("Exit - 0; Encrypt - 1; Decrypt - 2;\n");
+        char commandCode;
+        scanf_s("%c", &commandCode, 1);
+        while ((getchar()) != '\n');  // to remove '\n' from stdin
 
+        int key = 0;
 
-        if ((int)messageToEncrypt[index] >= (int)('A') && (int)messageToEncrypt[index] <= (int)('Z'))  // uppercase letter
+        switch (commandCode)
         {
-            if (curChCodeWithOffSet < (int)('A'))
-            {
-                int newOffSet = (int)('A') - curChCodeWithOffSet;  // positive
-                messageToEncrypt[index] = (int)('Z') + 1 - newOffSet;
-            }
-            else if (curChCodeWithOffSet > (int)('Z'))
-            {
-                int newOffSet = curChCodeWithOffSet - (int)('Z');  
-                messageToEncrypt[index] = (int)('A') - 1 + newOffSet;  // positive
-            }
-            else 
-            {
-                messageToEncrypt[index] = curChCodeWithOffSet;
-            }
-        }
-        else if ((int)messageToEncrypt[index] >= (int)('a') && (int)messageToEncrypt[index] <= (int)('z'))  // lowercase letter
-        {
-            if (curChCodeWithOffSet < (int)('a'))
-            {
-                int newOffSet = (int)('a') - curChCodeWithOffSet;  // positive
-                messageToEncrypt[index] = (int)('z') + 1 - newOffSet;
-            }
-            else if (curChCodeWithOffSet > (int)('z'))
-            {
-                int newOffSet = curChCodeWithOffSet - (int)('z');
-                messageToEncrypt[index] = (int)('a') - 1 + newOffSet;  // positive
-            }
-            else
-            {
-                messageToEncrypt[index] = curChCodeWithOffSet;
-            }
+        case '0':
+            ifContinue = false;
+            break;
+        case '1':
+            HandleEncrypt(input, encryptProcPtr);
+            break;
+        case '2':
+            HandleDecrypt(input, decryptProcPtr);
+            break;
+        default:
+            printf("Command not implemented\n");
+            break;
         }
     }
+    delete[] input; 
+    FreeLibrary(handle);
+
+    return 0;
     
-    return messageToEncrypt;
 }
-char* Decrypt(char* messageToDecrypt, int offSet)
+
+int HandleEncrypt(char* input, encrypt_ptr_t encryptProcPtr)
 {
-    offSet = -offSet;
+    int key = 0;
     
-    return Encrypt(messageToDecrypt, offSet);
+    printf("Enter str to encrypt:\n");
+    fgets(input, INPUTSIZE, stdin);
+
+    printf("Enter the key:\n");
+    scanf_s("%d", &key);
+    while ((getchar()) != '\n');  // to remove '\n' from stdin
+
+    if (key > 26 || key < -26) {
+        printf("The key is too big\n");
+        return -1;
+    }
+    encryptProcPtr(input, key);
+    printf("Encrypted message is: %s", input);
+
+    return 0;
+}
+
+int HandleDecrypt(char* input, decrypt_ptr_t decryptProcPtr)
+{
+    int key = 0;
+
+    printf("Enter str to decrypt:\n");
+    fgets(input, INPUTSIZE, stdin);
+
+    printf("Enter the key:\n");
+    scanf_s("%d", &key);
+    while ((getchar()) != '\n');  // to remove '\n' from stdin
+
+    if (key > 26 || key < -26) {
+        printf("The key is too big\n");
+        return -1;
+    }
+    decryptProcPtr(input, key);
+    printf("Decrypted message is: %s", input);
+
+    return 0;
 }
