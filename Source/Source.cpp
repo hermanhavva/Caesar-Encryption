@@ -52,7 +52,7 @@ int main()
     bool ifContinue = true;
 
     while (ifContinue)
-    {
+    { 
         printf("Exit - 0; Encrypt - 1; Decrypt - 2;\n");
         char commandCode;
         scanf_s("%c", &commandCode, 1);
