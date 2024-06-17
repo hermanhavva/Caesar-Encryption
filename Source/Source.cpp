@@ -7,6 +7,7 @@ using namespace std;
 
 
 char* Encrypt(char* messageToEncrypt, int offSet);
+char* Decrypt(char* messageToDecrypt, int offSet);
 // Pointer to sum function
 typedef double(*sum_ptr_t)(double, double);
 // Pointer to multiply function
@@ -14,9 +15,14 @@ typedef double(*multiply_ptr_t)(double, double);
  
 int main() {
  
-    char message[] = "XYZ";
-    cout << Encrypt(message, 1);
-    
+    char message[] = "Xy13Z";
+
+   
+    Encrypt(message, 1);
+    cout << message << endl;  // the key is no more than 26 
+    Decrypt(message, 1);
+    cout << message << endl;
+
     /*   HINSTANCE handle = LoadLibrary(TEXT("..\\caesarDLL\\x64\\Debug\\caesarDLL.dll"));
     if (handle == nullptr || handle == INVALID_HANDLE_VALUE) {
         cout << "Lib not found" << endl;
@@ -46,6 +52,7 @@ int main() {
 }
 char* Encrypt(char* messageToEncrypt, int offSet)
 {
+
     for (int index = 0; index <= strlen(messageToEncrypt); index++)
     {
         int curChCodeWithOffSet = (int)messageToEncrypt[index] + offSet;
@@ -70,16 +77,28 @@ char* Encrypt(char* messageToEncrypt, int offSet)
         }
         else if ((int)messageToEncrypt[index] >= (int)('a') && (int)messageToEncrypt[index] <= (int)('z'))  // lowercase letter
         {
-
+            if (curChCodeWithOffSet < (int)('a'))
+            {
+                int newOffSet = (int)('a') - curChCodeWithOffSet;  // positive
+                messageToEncrypt[index] = (int)('z') + 1 - newOffSet;
+            }
+            else if (curChCodeWithOffSet > (int)('z'))
+            {
+                int newOffSet = curChCodeWithOffSet - (int)('z');
+                messageToEncrypt[index] = (int)('a') - 1 + newOffSet;  // positive
+            }
+            else
+            {
+                messageToEncrypt[index] = curChCodeWithOffSet;
+            }
         }
-        else if ((int)messageToEncrypt[index] >= (int)('0') && (int)messageToEncrypt[index] <= (int)('9'))
-        {
-        }
-        
     }
+    
     return messageToEncrypt;
 }
 char* Decrypt(char* messageToDecrypt, int offSet)
 {
-    return messageToDecrypt;
+    offSet = -offSet;
+    
+    return Encrypt(messageToDecrypt, offSet);
 }
