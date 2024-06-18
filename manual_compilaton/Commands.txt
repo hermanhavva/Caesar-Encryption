@@ -1,0 +1,8 @@
+Compile:
+ cmd /C '"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\vsdevcmd.bat" && cl /c /EHsc .\Source.cpp'
+
+Link(for exe):
+ cmd /C '"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\vsdevcmd.bat" && cl Source.obj /link'
+
+Link (for dll):
+ cmd /C '"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\vsdevcmd.bat" && cl /LD Lib.obj /link'
